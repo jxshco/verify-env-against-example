@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
+  "name": "verify-env-agains-example",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "A GitHub Action that verifies that the environment variables are set according to the example file",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,14 +15,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/jxshco/verify-env-against-example.git"
   },
   "keywords": [
-    "actions",
-    "node",
-    "setup"
+    "github",
+    "action",
+    "verify",
+    "env",
+    "example",
+    ".env"
   ],
-  "author": "",
+  "author": "Joshua Sturrock",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.10.0"
