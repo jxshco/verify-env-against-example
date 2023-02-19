@@ -36,16 +36,62 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const wait_1 = __nccwpck_require__(817);
+const fs = __importStar(__nccwpck_require__(225));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-            core.debug(new Date().toTimeString());
-            yield (0, wait_1.wait)(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput('time', new Date().toTimeString());
+            const envFile = core.getInput('env-file');
+            const exampleEnvFile = core.getInput('example-env-file');
+            // compare env file with example env file if the env file contains all the variables from the example env file
+            // then the env file is valid and the action will pass. if the env file is missing any variables from the example
+            // env file then the action will fail and the user will be notified of the missing variables in the env file. If
+            // the env file contains variables that are not in the example env file then the action will pass and the user
+            // will be notified of the extra variables in the env file.
+            // read the env file
+            const envFileContents = yield fs.readFile(envFile, 'utf8');
+            // read the example env file
+            const exampleEnvFileContents = yield fs.readFile(exampleEnvFile, 'utf8');
+            // split the env file contents into an array of lines
+            const envFileLines = envFileContents.split('\n');
+            // split the example env file contents into an array of lines
+            const exampleEnvFileLines = exampleEnvFileContents.split('\n');
+            // create an array of variables from the env file
+            const envFileVariables = envFileLines.map((line) => {
+                const [variable] = line.split('=');
+                return variable;
+            });
+            // create an array of variables from the example env file
+            const exampleEnvFileVariables = exampleEnvFileLines.map((line) => {
+                const [variable] = line.split('=');
+                return variable;
+            });
+            // create an array of missing variables by comparing the example env file variables to the env file variables
+            const missingVariables = exampleEnvFileVariables.filter((variable) => !envFileVariables.includes(variable));
+            // create an array of extra variables by comparing the env file variables to the example env file variables
+            const extraVariables = envFileVariables.filter((variable) => !exampleEnvFileVariables.includes(variable));
+            // if there are missing variables then the action will fail and the user will be notified of the missing variables
+            if (missingVariables.length > 0) {
+                core.setFailed('The env file is missing variables. Please add the missing variables to the env file.');
+                // log the missing variables
+                core.info('The following variables are missing from the env file:');
+                for (const variable of missingVariables) {
+                    core.info(`- ${variable}`);
+                }
+                // log the extra variables
+                core.info('The following variables are extra in the env file:');
+                for (const variable of extraVariables) {
+                    core.info(`- ${variable}`);
+                }
+            }
+            else {
+                // if there are no missing variables then the action will pass and the user will be notified of the extra variables
+                core.info('The env file is valid.');
+                // log the extra variables
+                core.info('The following variables are extra in the env file:');
+                for (const variable of extraVariables) {
+                    core.info(`- ${variable}`);
+                }
+            }
         }
         catch (error) {
             if (error instanceof Error)
@@ -54,37 +100,6 @@ function run() {
     });
 }
 run();
-
-
-/***/ }),
-
-/***/ 817:
-/***/ (function(__unused_webpack_module, exports) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error('milliseconds not a number');
-            }
-            setTimeout(() => resolve('done!'), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
 
 
 /***/ }),
@@ -2805,6 +2820,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 225:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 
