@@ -17,7 +17,7 @@ This action verifies that an env file matches another env file.
 ## Example usage
 
 ```yaml
-uses: actions/env-file-verifier@v1
+uses: actions/verify-env-against-example@v1
 with:
   env-file: './.env'
   env-file-example: './.env.example'
